@@ -6,21 +6,42 @@ var hand = [{value:7, color:0}, null, {value:11, color:3}, {value:14, color:2}]
 var cardWidth = 59;
 var cardHeigth = 92;
 
+// Shuffle and array...
+function shuffle(array) {
+	var counter = array.length, temp, index;
+
+	// While there are elements in the array
+	while (counter > 0) {
+		// Pick a random index
+		index = Math.floor(Math.random() * counter);
+
+		// Decrease counter by 1
+		counter--;
+
+		// And swap the last element with it
+		temp = array[counter];
+		array[counter] = array[index];
+		array[index] = temp;
+	}
+
+	return array;
+}
+
 // Split the GET parameters into an assoc array
 function transformToAssocArray( prmstr ) {
-    var params = {};
-    var prmarr = prmstr.split("&");
-    for ( var i = 0; i < prmarr.length; i++) {
+	var params = {};
+	var prmarr = prmstr.split("&");
+	for ( var i = 0; i < prmarr.length; i++) {
 	var tmparr = prmarr[i].split("=");
 	params[tmparr[0]] = tmparr[1];
-    }
-    return params;
+	}
+	return params;
 }
 
 // Helper function to get the search parameters
 function getSearchParameters() {
-      var prmstr = window.location.search.substr(1);
-      return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+	  var prmstr = window.location.search.substr(1);
+	  return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
 }
 
 // Get the 'GET' parameters - we need the player and the enemy
