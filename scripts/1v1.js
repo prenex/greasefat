@@ -1,10 +1,35 @@
 // Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
 //var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
-var hand = [{value:7, color:0}, null, {value:11, color:3}, {value:14, color:2}]
+var hand = [{value:7, color:0}, null, {value:11, color:3}, {value:14, color:2}];
+
+// Holds the whole deck
+var deck = [];
 
 // The widht and heigth of the sprites
 var cardWidth = 59;
 var cardHeigth = 92;
+
+function resetGame() {
+	// Remove cards from the hand
+	for(i = 0; i < 4; ++i){
+		hand[i] = null;
+	}
+	// Create a shuffled deck of 32 cards
+	createShuffledDeck();
+}
+
+function createShuffledDeck() {
+	// Go over all the four colors
+	for(c = 0; c < 4; ++c) {
+		// With all the 7..14 values each
+		for(v = 7; v < 15; ++v) {
+			// and create a card representation
+			deck.push({value:v, color:c});
+		}
+	}
+	// After the deck is created, shuffle all the cards
+	shuffle(deck);
+}
 
 // Shuffle and array...
 function shuffle(array) {
@@ -74,6 +99,8 @@ function loaded(){
 
 	// Notification about joining the game called when connection is established
 	function join() {
+		// The game state should be reseted
+		resetGame();
 		// Other player should see that I have joined the game...
 		publish({cmd:"join", who:params.player});
 	}
@@ -93,9 +120,21 @@ function onMessage(msg) {
 	console.log(msg);
 }
 
+function drawCards() {
+	for(i = 0; i < 4; ++i){
+		if(hand[i] == null){
+			draw(i);
+		}
+	}
+}
+
+function draw(cardIndex) {
+	hand[cardIndex] = deck.pop();
+}
+
 // This function is used to update the hand of the player:
 // - The hand array will be used to change css sprites!
-function updateHand(){
+function updateHand() {
 	$("div#hand div.card").each(function(index){
 		var card = hand[index];
 		if(card != null) {
