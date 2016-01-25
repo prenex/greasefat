@@ -1,3 +1,8 @@
+// Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
+//var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
+var hand = [{value:7, color:0}, null, {value:11, color:3}, {value:14, color:2}]
+
+// The widht and heigth of the sprites
 var cardWidth = 59;
 var cardHeigth = 92;
 
@@ -28,9 +33,6 @@ var player1 = params.player < params.enemy ? params.player : params.enemy;
 var player2 = params.player > params.enemy ? params.player : params.enemy;
 var chName = "greasefat_" + player1 + "_" + player2;
 console.log("channel: " + chName);
-
-// Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
-var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
 
 // Initialize the PUBNUB communication
 var gametopic = PUBNUB.init({
@@ -75,13 +77,23 @@ function onMessage(msg) {
 function updateHand(){
 	$("div#hand div.card").each(function(index){
 		var card = hand[index];
-		var y = card.color * cardHeigth;
-		var x = (14 - card.value) * cardWidth;
-		var pos = -x + "px " + y + "px";
-		console.log(pos);
-		// TODO: update the card
-		$(this).css({
-			"background-position":pos,
-		});
+		if(card != null) {
+			// If the card is not null, show the proper sprite
+			// (and re-enable display:block)
+			var y = card.color * cardHeigth;
+			var x = (14 - card.value) * cardWidth;
+			var pos = -x + "px " + y + "px";
+			console.log(pos);
+			// TODO: update the card
+			$(this).css({
+				"display":"block",
+				"background-position":pos,
+			});
+		} else {
+			// If the card is null, we should not show it!
+			$(this).css({
+				"display":"none",
+			});
+		}
 	});
 }
