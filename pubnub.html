@@ -1,0 +1,32 @@
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" href="main.css" type="text/css" />
+</head>
+<body>
+
+<script src="https://cdn.pubnub.com/pubnub.min.js"></script>
+
+<script charset="utf-8">
+	(function(){
+		var PUBNUB_demo = PUBNUB.init({
+			publish_key: 'pub-c-6036e039-6cec-46af-8961-389cc5ca156d',
+			subscribe_key: 'sub-c-f5954296-c1c0-11e5-b684-02ee2ddab7fe'
+		});
+
+		PUBNUB_demo.subscribe({
+			channel: 'demo_tutorial',
+			message: function(m){console.log(m)},
+			connect: publish
+		});
+
+		function publish() {
+			PUBNUB_demo.publish({
+				channel: 'demo_tutorial',
+				message: {"text":"Hey!"}
+			});
+		}
+	})();
+</script>
+</body>
+</html>

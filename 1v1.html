@@ -1,0 +1,52 @@
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" href="css/1v1.css" type="text/css" />
+
+<!-- Load the minimal pubnub javascript -->
+<script src="https://cdn.pubnub.com/pubnub.min.js"></script>
+
+<!-- Load the minimal jquery -->
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+
+<!-- Communication and gameplay javascript -->
+<script charset="utf-8" src="scripts/1v1.js"> </script>
+
+</head>
+<body onload="loaded()">
+
+<div id="table">
+	<!-- Enemy hand -->
+	<div id="ehand">
+		<table>
+		<tr>
+		<td><div class="ecard" onclick="updateHand()" /></td>
+		<td><div class="ecard" /></td>
+		<td><div class="ecard" /></td>
+		<td><div class="ecard" /></td>
+		</tr>
+		</table>
+	</div>
+	<div class="pack" id="epack">
+	</div>
+	<!-- Cards down on the table -->
+	<div id="down">
+	</div>
+	<!-- The cardpack - this is just a picture... -->
+	<div class="pack" id="mainpack">
+	</div>
+	<!-- Our hand -->
+	<div id="hand">
+		<table>
+		<tr>
+		<td><div class="card" /></td>
+		<td><div class="card" /></td>
+		<td><div class="card" /></td>
+		<td><div class="card" /></td>
+		</tr>
+		</table>
+	</div>
+</div>
+
+</body>
+</html>

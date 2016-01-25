@@ -1,0 +1,66 @@
+#table {
+	background-color: black;
+	background-image: url(../images/table.png);
+	background-size:100%;
+	height: 100%;
+	width: 100%;
+}
+
+div#hand {
+	position: absolute;
+	top: 75%;
+	left: 25%;
+}
+
+div#ehand {
+	position: absolute;
+	top: 15%;
+	left: 25%;
+}
+
+.card {
+	top: 0px;
+	width: 59px;
+	height: 92px;
+	background: url(../images/deck.jpg) 0 0;
+	position: relative;
+	float: left;
+}
+
+.card:hover {
+	top: -10px;
+}
+
+.ecard {
+	top: 0px;
+	width: 59px;
+	height: 92px;
+	background: url(../images/cardback.png) 0 0;
+	background-size:100%;
+	position: relative;
+	float: left;
+}
+
+div.pack {
+	position: absolute;
+	top: 45%;
+	left: 60%;
+	width: 59px;
+	height: 100px;
+	background: url(../images/cardpack.png) 0 0;
+	background-size:100%;
+	position: relative;
+	float: left;
+}
+
+div#epack {
+	position: absolute;
+	top: 15%;
+	left: 60%;
+}
+
+div#mainpack {
+	position: absolute;
+	top: 45%;
+	left: 60%;
+}
