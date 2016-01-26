@@ -21,7 +21,7 @@ function resetGame() {
 	// Create a shuffled deck of 32 cards
 	createShuffledDeck();
 	// Reset the cards down on the table
-	//down = [null, null, null, null, null, null, null, null];
+	down = [];
 }
 
 function createShuffledDeck() {
@@ -137,6 +137,16 @@ function drawCards() {
 
 function draw(cardIndex) {
 	hand[cardIndex] = deck.pop();
+}
+
+// Puts down the given card from the hand
+// The function also updated the hand and the down
+function putDown(index){
+	card = hand[index];
+	down.push(card);
+	hand[index] = null;
+	updateHand();
+	updateDown();
 }
 
 // This function is used to update the hand of the player:
