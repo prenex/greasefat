@@ -42,14 +42,17 @@ div#ehand {
 }
 
 div.pack {
-	position: absolute;
-	top: 45%;
-	left: 60%;
 	width: 59px;
 	height: 100px;
 	background: url(../images/cardpack.png) 0 0;
 	background-size:100%;
-	position: relative;
+	float: left;
+}
+
+div#down {
+	position: absolute;
+	top: 45%;
+	left: 20%;
 	float: left;
 }
 

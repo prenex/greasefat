@@ -21,9 +21,9 @@
 		<table>
 		<tr>
 		<td><div class="ecard" onclick="shuffle(hand)" /></td>
-		<td><div class="ecard" /></td>
-		<td><div class="ecard" /></td>
-		<td><div class="ecard" /></td>
+		<td><div class="ecard" onclick="resetGame()" /></td>
+		<td><div class="ecard" onclick="printCards(hand)" /></td>
+		<td><div class="ecard" onclick="printCards(deck)" /></td>
 		</tr>
 		</table>
 	</div>
@@ -31,9 +31,17 @@
 	</div>
 	<!-- Cards down on the table -->
 	<div id="down">
+ 		<div class="card" style="left:0px"></div>
+ 		<div class="card" style="left:-25px"></div>
+ 		<div class="card" style="left:-50px"></div>
+ 		<div class="card" style="left:-75px"></div>
+ 		<div class="card" style="left:-100px"></div>
+ 		<div class="card" style="left:-125px"></div>
+ 		<div class="card" style="left:-150px"></div>
+ 		<div class="card" style="left:-175px"></div>
 	</div>
 	<!-- The cardpack - this is just a picture... -->
-	<div class="pack" id="mainpack" onclick="drawCards(); updateHand()">
+	<div class="pack" id="mainpack" onclick="drawCards(); updateHand(); updateDown()">
 	</div>
 	<!-- Our hand -->
 	<div id="hand">

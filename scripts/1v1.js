@@ -1,6 +1,8 @@
 // Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
 //var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
-var hand = [{value:7, color:0}, null, {value:11, color:3}, {value:14, color:2}];
+var hand = [null, null, null, null];
+
+var down = [{value:7, color:0}, {value:14, color:0}, null, null, null, null, null, {value:8, color:2}];
 
 // Holds the whole deck
 var deck = [];
@@ -14,8 +16,12 @@ function resetGame() {
 	for(i = 0; i < 4; ++i){
 		hand[i] = null;
 	}
+	// Reset the deck
+	deck = [];
 	// Create a shuffled deck of 32 cards
 	createShuffledDeck();
+	// Reset the cards down on the table
+	//down = [null, null, null, null, null, null, null, null];
 }
 
 function createShuffledDeck() {
@@ -121,6 +127,7 @@ function onMessage(msg) {
 }
 
 function drawCards() {
+	console.log("drawcards");
 	for(i = 0; i < 4; ++i){
 		if(hand[i] == null){
 			draw(i);
@@ -137,23 +144,40 @@ function draw(cardIndex) {
 function updateHand() {
 	$("div#hand div.card").each(function(index){
 		var card = hand[index];
-		if(card != null) {
-			// If the card is not null, show the proper sprite
-			// (and re-enable display:block)
-			var y = card.color * cardHeigth;
-			var x = (14 - card.value) * cardWidth;
-			var pos = -x + "px " + y + "px";
-			console.log(pos);
-			// TODO: update the card
-			$(this).css({
-				"display":"block",
-				"background-position":pos,
-			});
-		} else {
-			// If the card is null, we should not show it!
-			$(this).css({
-				"display":"none",
-			});
-		}
+		updateDivCardWith($(this), card);
 	});
+}
+
+function updateDown() {
+	$("div#down div.card").each(function(index){
+		var card = down[index];
+		console.log(card);
+		updateDivCardWith($(this), card);
+	});
+}
+
+function updateDivCardWith(div, card) {
+	if(card != null) {
+		// If the card is not null, show the proper sprite
+		// (and re-enable display:block)
+		var y = card.color * cardHeigth;
+		var x = (14 - card.value) * cardWidth;
+		var pos = -x + "px " + y + "px";
+		console.log(pos);
+		// TODO: update the card
+		div.css({
+			"display":"block",
+			"background-position":pos,
+		});
+	} else {
+		// If the card is null, we should not show it!
+		div.css({
+			"display":"none",
+		});
+	}
+}
+function printCards(cards){
+	for(i = 0; i < cards.length; ++i) {
+		console.log("(" + cards[i].value + ", " + cards[i].color + ")");
+	}
 }
