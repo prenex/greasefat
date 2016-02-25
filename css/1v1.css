@@ -1,7 +1,7 @@
 #table {
 	background-color: black;
 	background-image: url(../images/table.png);
-	background-size:100%;
+	background-size:100% 100%;
 	height: 100%;
 	width: 100%;
 }
@@ -59,11 +59,11 @@ div#down {
 div#epack {
 	position: absolute;
 	top: 15%;
-	left: 60%;
+	left: 75%;
 }
 
 div#mainpack {
 	position: absolute;
 	top: 45%;
-	left: 60%;
+	left: 75%;
 }
