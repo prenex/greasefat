@@ -58,7 +58,9 @@ function loaded(){
 		// The game state should be reseted
 		resetGame();
 		// Other player should see that I have joined the game...
-		COM.publish({cmd:"join", who:params.player});
+		//COM.publish({cmd:"join", who:params.player});
+		console.log(new CMD.Join(params.player));
+		COM.publish(new CMD.Join(params.player));
 	}
 }
 
@@ -114,7 +116,7 @@ function onMessage(msg) {
 	// TODO: Handle messages according to the protocol of the game!
 	console.log(msg);
 
-	if(msg.cmd == "join"){
+	if(msg.cmd == CMD.CMD_JOIN){
 		console.log("<" + msg.who + "> joined to the game!");
 		console.log("player: " + params.player);
 		console.log("enemy: " + params.enemy);
