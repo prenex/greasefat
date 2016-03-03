@@ -12,6 +12,7 @@
 <!-- Communication and gameplay javascript -->
 <script charset="utf-8" src="scripts/com.js"> </script>
 <script charset="utf-8" src="scripts/cmd.js"> </script>
+<script charset="utf-8" src="scripts/get.js"> </script>
 <script charset="utf-8" src="scripts/1v1.js"> </script>
 
 </head>
@@ -22,8 +23,8 @@
 	<div id="ehand">
 		<table>
 		<tr>
-		<td><div class="ecard" onclick="shuffle(hand)" /></td>
-		<td><div class="ecard" onclick="resetGame()" /></td>
+		<td><div class="ecard" onclick="shuffle(hand); updateGUI()" /></td>
+		<td><div class="ecard" onclick="newGame()" /></td>
 		<td><div class="ecard" onclick="ePutDown({value:7, color:0})" /></td>
 		<td><div class="ecard" onclick="printCards(deck); eDrawCards([{value:7, color:0}, {value:7, color:1}]); printCards(deck)" /></td>
 		</tr>
@@ -43,7 +44,7 @@
  		<div class="card" style="left:-175px"></div>
 	</div>
 	<!-- The cardpack - this is just a picture... -->
-	<div class="pack" id="mainpack" onclick="drawCards(); updateHand(); updateEHand(); updateDown()">
+	<div class="pack" id="mainpack" onclick="drawCards(); updateGUI()">
 	</div>
 	<!-- Our hand -->
 	<div id="hand">

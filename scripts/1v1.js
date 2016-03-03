@@ -1,3 +1,8 @@
+// JS "enum" representing the state of the game
+var GameState = Object.freeze({"WAITING":1, "CAN_DRAW":2, "WAIT_FOR_DRAW":3})
+// The variable that is holding the current game state
+var currentState = GameState.WAITING;
+
 // Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
 //var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
 var hand = [null, null, null, null];
@@ -6,7 +11,8 @@ var FULL_HAND_COUNT = 4; // constant
 var ehand = [null, null, null, null];
 var eHandCount = 4;
 
-var down = [{value:7, color:0}, {value:14, color:0}, null, null, null, null, null, {value:8, color:2}];
+// The cards currently down on the table
+var down = [null, null, null, null, null, null, null, null];
 
 // Holds the whole deck
 var deck = [];
@@ -15,25 +21,8 @@ var deck = [];
 var cardWidth = 59;
 var cardHeigth = 92;
 
-// Split the GET parameters into an assoc array
-function transformToAssocArray( prmstr ) {
-	var params = {};
-	var prmarr = prmstr.split("&");
-	for ( var i = 0; i < prmarr.length; i++) {
-	var tmparr = prmarr[i].split("=");
-	params[tmparr[0]] = tmparr[1];
-	}
-	return params;
-}
-
-// Helper function to get the search parameters
-function getSearchParameters() {
-	  var prmstr = window.location.search.substr(1);
-	  return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
-}
-
-// Get the 'GET' parameters - we need the player and the enemy
-var params = getSearchParameters();
+// Extract the 'GET' parameters as an associative array - we need the player and the enemy
+var params = GET.parameters();
 console.log("player: " + params.player);
 console.log("enemy: " + params.enemy);
 
@@ -55,8 +44,6 @@ function loaded(){
 
 	// Notification about joining the game called when connection is established
 	function join() {
-		// The game state should be reseted
-		resetGame();
 		// Other player should see that I have joined the game...
 		//COM.publish({cmd:"join", who:params.player});
 		console.log(new CMD.Join(params.player));
@@ -64,7 +51,7 @@ function loaded(){
 	}
 }
 
-function resetGame() {
+function newGameState() {
         // Remove cards from the hand
         for(i = 0; i < 4; ++i){
                 hand[i] = null;
@@ -75,6 +62,11 @@ function resetGame() {
         createShuffledDeck();
         // Reset the cards down on the table
         down = []; 
+}
+
+function newGame() {
+	newGameState();
+	updateGUI();
 }
 
 function createShuffledDeck() {
@@ -113,13 +105,26 @@ function shuffle(array) {
 
 // The main onMessage event handler function for the game topic
 function onMessage(msg) {
+	// FIXME: handle messages by 'me' - those should not take effect!
 	// TODO: Handle messages according to the protocol of the game!
 	console.log(msg);
 
 	if(msg.cmd == CMD.CMD_JOIN){
-		console.log("<" + msg.who + "> joined to the game!");
-		console.log("player: " + params.player);
-		console.log("enemy: " + params.enemy);
+		// If we are waiting for a player to come
+		if(currentState == GameState.WAITING) {
+			// Start a new game
+			console.log("<" + msg.who + "> joined to the game!");
+			console.log("player: " + params.player);
+			console.log("enemy: " + params.enemy);
+			newGame();
+			console.log("A new game has been started - you can draw cards...");
+			// And set the game state so that we can draw cards
+			currentState = GameState.CAN_DRAW;
+			// Notify other player about your game start
+			COM.publish(new CMD.Started(params.player));
+		} else {
+			// TODO: fix issues because of re-connection ;-)
+		}
 	}
 }
 
@@ -129,20 +134,21 @@ function drawCards() {
 	console.log("drawcards");
 	for(i = 0; i < 4; ++i){
 		if(hand[i] == null){
-			draw(i);
+			draw(i, hand);
 		}
 	}
 }
 
 // Draw a card to the given index of our hand
-function draw(cardIndex) {
+function draw(cardIndex, hand) {
 	hand[cardIndex] = deck.pop();
 }
 
 // Removes the cards drawn by the enemy from the deck of our JS model.
 // This is necessary as our deck should be in sync with theirs...
+// TODO: This function has a side-effect on the "cards" parameter
+// - it gets removed if adding is successful!
 function eDrawCards(cards) {
-// TODO: Add to eHand
 	console.log("eDrawCards");
 	// Filter deck to contain only those cards
 	deck = deck.filter(function(deckCard){
@@ -152,27 +158,45 @@ function eDrawCards(cards) {
 				&& (drawnCard.color != deckCard.color);
 		});
 	});
+
+	// Add the cards to the local representation
+	for(i = 0; i < 4; ++i){
+		if(ehand[i] == null){
+			ehand[i] = cards.pop();
+		}
+	}
 }
 
 // Puts down the given card from the hand
-// The function also updated the hand and the down
+// The function also updates GUI
 function putDown(index){
 	card = hand[index];
 	down.push(card);
 	hand[index] = null;
-	updateHand();
-	updateDown();
+	updateGUI();
 }
 
 // Should be called when we get to know that the enemy did put down
-// a card. This puts it down, updates down and also gets the card
+// a card. This puts it down and updates GUI
 function ePutDown(card) {
 // TODO: Remove from eHand!!!
+	for(i = 0; i < 4; ++i){
+		// Search the element with the same value and color and make it null
+		if(ehand[i].value == card.value && ehand[i].color == card.color){
+			ehand[index] = null;
+		}
+	}
 	// "Remove" a card from the upper enemy cards
 	--eHandCount;
 	// push the given card down
 	down.push(card);
 	// update relevant things
+	updateGUI();
+}
+
+// This method updates everything on the GUI
+function updateGUI() {
+	updateHand();
 	updateEHand();
 	updateDown();
 }

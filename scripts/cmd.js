@@ -7,6 +7,7 @@ var CMD = (function(){
 
 	CMD.CMD_CMD = "cmd";
 	CMD.CMD_JOIN = "join";
+	CMD.CMD_STARTED = "started"
 
 	// "Base class"
 	CMD.Cmd = function(){
@@ -17,6 +18,13 @@ var CMD = (function(){
 	CMD.Join = function(who) {
 		// Properties
 		this.cmd = CMD.CMD_JOIN;
+		this.who = who;
+	}
+
+	// Join class of communication commands
+	CMD.Started = function(who) {
+		// Properties
+		this.cmd = CMD.CMD_STARTED;
 		this.who = who;
 	}
 

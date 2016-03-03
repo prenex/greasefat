@@ -31,6 +31,7 @@ var COM = (function(){
 
 	// Publishing a message over the channel
 	COM.publish = function(msg){
+		console.log("publish: " + msg);
 		// Just use pubnub with the saved channel name
 		gametopic.publish({
 			channel: chName,
