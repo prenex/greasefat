@@ -46,7 +46,6 @@ function loaded(){
 	function join() {
 		// Other player should see that I have joined the game...
 		//COM.publish({cmd:"join", who:params.player});
-		console.log(new CMD.Join(params.player));
 		COM.publish(new CMD.Join(params.player));
 	}
 }
@@ -105,12 +104,16 @@ function shuffle(array) {
 
 // The main onMessage event handler function for the game topic
 function onMessage(msg) {
-	// FIXME: handle messages by 'me' - those should not take effect!
-	// TODO: Handle messages according to the protocol of the game!
-	console.log(msg);
+	// Handle messages by 'me' - those should not make any effect!
+	if(msg.who == params.player){
+		return;
+	}
 
+	// Handle messages according to the protocol of the game, first log it out.
+	console.log("onMessage(..):");
+	console.log(msg);
 	if(msg.cmd == CMD.CMD_JOIN){
-		// If we are waiting for a player to come
+		// See if we are waiting for a player to come and got a join
 		if(currentState == GameState.WAITING) {
 			// Start a new game
 			console.log("<" + msg.who + "> joined to the game!");
@@ -119,13 +122,29 @@ function onMessage(msg) {
 			newGame();
 			console.log("A new game has been started - you can draw cards...");
 			// And set the game state so that we can draw cards
-			currentState = GameState.CAN_DRAW;
+			updateCurrentState(GameState.CAN_DRAW);
 			// Notify other player about your game start
 			COM.publish(new CMD.Started(params.player));
 		} else {
 			// TODO: fix issues because of re-connection ;-)
+			console.log("ERROR: someone joined an already going game!");
 		}
 	}
+
+	if(msg.cmd == CMD.CMD_STARTED){
+		if(currentState == GameState.WAITING){
+			// If we come here that means that the other has started the game
+			// and then we should start our game too and wait for her to draw her cards
+			newGame();
+			updateCurrentState(GameState.WAIT_FOR_DRAW);
+		}
+	}
+}
+
+// Changes the game-state to the given one
+// Method is extracted early so that later logic can came in (like state-check etc.)
+function updateCurrentState(nextState) {
+	currentState = nextState;
 }
 
 // Draw for all possible positions
@@ -213,7 +232,7 @@ function updateHand() {
 // Updates the enemy hand according to eHandCount
 function updateEHand() {
 	$("div#ehand div.ecard").each(function(index){
-		console.log("i.eHandCount:" + index + "." + eHandCount);
+		//console.log("i.eHandCount:" + index + "." + eHandCount);
 		if(index < eHandCount){
 			$(this).css({"display":"block"});
 		} else{
