@@ -1,7 +1,8 @@
 // JS "enum" representing the state of the game
-var GameState = Object.freeze({"WAITING":1, "CAN_DRAW":2, "WAIT_FOR_DRAW":3})
+var GameState = Object.freeze({"WAITING":1, "CAN_DRAW":2, "WAIT_FOR_DRAW":3, "CAN_PUT":4, "CAN_PUT_OR_LOSE":5, "WAIT_FOR_PUT":6})
 // The variable that is holding the current game state
 var currentState = GameState.WAITING;
+var previousState = null;
 
 // Holds the current hand of the user (TODO: just prefilled with bogus data to see the structure)
 //var hand = [{value:7, color:0}, {value:11, color:1}, {value:11, color:3}, {value:14, color:2}]
@@ -139,22 +140,63 @@ function onMessage(msg) {
 			updateCurrentState(GameState.WAIT_FOR_DRAW);
 		}
 	}
+
+	if(msg.cmd == CMD.CMD_DREW){
+		if(currentState == GameState.WAIT_FOR_DRAW){
+			// Handle the enemy drawing her cards
+			eDrawCards(msg.cards);
+			// Change state according to the earlier one
+			if(previousState == GameState.CAN_DRAW){
+				// If the previous local state was the can-draw
+				// we have drawn the cards earlier then the enemy
+				// in this case we update to the can-put state...
+				// (message is her reaction to our drew...)
+				updateCurrentState(GameState.CAN_PUT);
+			}else{
+				// otherwise the enemy had drawn earlier than us
+				// And we can react to their drew
+				updateCurrentState(GameState.CAN_DRAW);
+			}
+		}
+	}
 }
 
 // Changes the game-state to the given one
-// Method is extracted early so that later logic can came in (like state-check etc.)
+// Method is extracted early so that later logic can came in (like state-checks, previous states etc.)
 function updateCurrentState(nextState) {
+	previousState = currentState;
 	currentState = nextState;
 }
 
 // Draw for all possible positions
 // TODO: Handle cases close to the end!
 function drawCards() {
-	console.log("drawcards");
-	for(i = 0; i < 4; ++i){
-		if(hand[i] == null){
-			draw(i, hand);
+	var drawnCards = [];
+	if(currentState == GameState.CAN_DRAW){
+		console.log("drawcards");
+		// Do the draw of the cards
+		for(i = 0; i < 4; ++i){
+			if(hand[i] == null){
+				draw(i, hand);
+				drawnCards.push(hand[i]);
+			}
 		}
+
+		// Update game state according to the previous state
+		if(previousState == GameState.WAIT_FOR_DRAW){
+			// In case previously we were waiting for the other to draw theirs
+			// now we should wait for them to put a card down (to keep order)
+			updateCurrentState(GameState.WAIT_FOR_PUT);
+		}else{
+			// Otherwise we are the first in order and we should go into can-put
+			updateCurrentState(GameState.CAN_PUT);
+		}
+
+		// Send message about what we did draw
+		// this is necessary to remove it from their deck
+		COM.publish(new CMD.Drew(params.player, drawnCards));
+	}else{
+		console.log("Current state:" + currentState + " do not enable drawing cards.");
 	}
 }
 
@@ -198,7 +240,7 @@ function putDown(index){
 // Should be called when we get to know that the enemy did put down
 // a card. This puts it down and updates GUI
 function ePutDown(card) {
-// TODO: Remove from eHand!!!
+	// Remove from eHand!!!
 	for(i = 0; i < 4; ++i){
 		// Search the element with the same value and color and make it null
 		if(ehand[i].value == card.value && ehand[i].color == card.color){
