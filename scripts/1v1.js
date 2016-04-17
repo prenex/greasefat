@@ -198,6 +198,7 @@ function updateCurrentState(nextState) {
 	currentState = nextState;
 	console.log("State has been changed from " + previousState + " to " + currentState);
 	// TODO: show the user what she can do
+	updateGUI();
 }
 
 // Draw for all possible positions
@@ -347,6 +348,22 @@ function updateGUI() {
 	updateHand();
 	updateEHand();
 	updateDown();
+	updateButtons();
+}
+
+function updateButtons() {
+	// It's mine button
+	if(currentState == GameState.CAN_WIN) {
+		$("div#mine").css({"display":"block"});
+	}else{
+		$("div#mine").css({"display":"none"});
+	}
+	// It's yours button
+	if(currentState == GameState.CAN_PUT_OR_LOSE) {
+		$("div#yours").css({"display":"block"});
+	}else{
+		$("div#yours").css({"display":"none"});
+	}
 }
 
 // This function is used to update the hand of the player:
@@ -386,7 +403,7 @@ function updateDivCardWith(div, card) {
 		var x = (14 - card.value) * cardWidth;
 		var pos = -x + "px " + y + "px";
 		console.log(pos);
-		// TODO: update the card
+		// update the card
 		div.css({
 			"display":"block",
 			"background-position":pos,
