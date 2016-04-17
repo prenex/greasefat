@@ -171,8 +171,13 @@ function onMessage(msg) {
 			// Handle the enemy putting down a card of hers
 			ePutDown(msg.card);
 			if(attacking){
-				//TODO: Check if we have won this battle here
+				// Check if we have won this battle here
 				// and transition to CAN_WIN when it happened.
+				if(down.length > 1 && down[down.length - 2].value != down[down.length - 1].value &&
+				   down[down.length - 1].value != 7) {
+					updateCurrentState(GameState.CAN_WIN);
+					return;
+				}
 
 				// When we are an attacker and the defender has put
 				// down her cards, then we can decide if we put down
