@@ -12,7 +12,7 @@ var CMD = (function(){
 	CMD.CMD_DREW = "drew";
 	CMD.CMD_PUT = "put";
 	CMD.CMD_LOSE = "lose";
-	CMD.CMD_WIN = "lose";
+	CMD.CMD_WIN = "win";
 
 	// "Base class"
 	CMD.Cmd = function(){

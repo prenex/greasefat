@@ -20,6 +20,11 @@ var down = [null, null, null, null, null, null, null, null];
 // Holds the whole deck
 var deck = [];
 
+// Holds the cards that I have won through the game
+var wonCards = [];
+// And the points that the won cards and actions (last win by a 7 add 10 points!) mean
+var wonPoints = 0;
+
 // The widht and heigth of the sprites
 var cardWidth = 59;
 var cardHeigth = 92;
@@ -194,6 +199,15 @@ function onMessage(msg) {
 			}
 		}
 	}
+
+	if(msg.cmd == CMD.CMD_WIN){
+		if(currentState == GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN){
+			// Handle (haha) that the other player has won a battle
+			// And wait until she draws her cards
+			down=[];
+			updateCurrentState(GameState.WAIT_FOR_DRAW);
+		}
+	}
 }
 
 // Changes the game-state to the given one
@@ -204,6 +218,44 @@ function updateCurrentState(nextState) {
 	console.log("State has been changed from " + previousState + " to " + currentState);
 	// TODO: show the user what she can do
 	updateGUI();
+}
+
+// Gets how many points a card means
+function cardPoint(card){
+	// In this game only the aces and tens count
+	// and of course the last strike with a seven ;-)
+	// (but that is handled elsewhere)
+	if(card.value == 10 || card.value == 14){
+		return 10;
+	}else{
+		return 0;
+	}
+}
+
+// This is called when we are clicking on the button after winning a battle
+// The function reset the down cards, count points and save the won cards.
+function mine() {
+	if(currentState == GameState.CAN_WIN){
+		// TODO: We should handle the last winning with a seven here!
+		for(i = 0; i <= down.length; ++i){
+			// Pick up the card
+			wonCard = down.pop();
+
+			// Add the points that we get for the given card
+			wonPoints+=cardPoint(wonCard);
+
+			// Add the card to the deck of our own won cards
+			wonCards.push(wonCard);
+		}
+
+		// Update state so that we can draw. Because we 
+		// have won the battle as an attacker we will
+		// draw first next time too...
+		updateCurrentState(GameState.CAN_DRAW);
+
+		// Notify the other player about our winning
+		COM.publish(new CMD.Win(params.player));
+	}
 }
 
 // Draw for all possible positions
@@ -255,7 +307,7 @@ function eDrawCards(cards) {
 		// for which every drawn card is different
 		return cards.every(function(drawnCard){
 			return (drawnCard.value != deckCard.value)
-				&& (drawnCard.color != deckCard.color);
+				|| (drawnCard.color != deckCard.color);
 		});
 	});
 
