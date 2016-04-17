@@ -267,19 +267,21 @@ function eDrawCards(cards) {
 function isValidPut(card){
 	if(attacking){
 		// The attacker should always put only when the rules enable her!
-		if(down.length != 0){
+		if(down.length == 0){
+			// The attacker can put down anything when the length is zero
+			// as that means he is putting down the first card in this battle
+			return true;
+		}else{
 			// In case there is something on the desk
-			// she can put only a card with the same value (or seven!)
-			downCard = down[down.length - 1];
+			// she can put only a card with the same value 
+			// as the first one on the desk (the battle-starter
+			// card) or a seven which can be used instead of any card!
+			downCard = down[0];
 			if(card.value == 7 || downCard.value == card.value){
 				return true;
 			}else{
 				return false;
 			}
-		}else{
-			// The attacker can put down anything when the length is zero
-			// as that means he is putting down the first card in this battle
-			return true;
 		}
 	}else{
 		// The defender can always put anything she wants. She HAS to put...
@@ -295,7 +297,7 @@ function putDown(index){
 		card = hand[index];
 
 		// Check if the card can be put on the top of "down"
-		if(isValidPut(card)){
+		if(!isValidPut(card)){
 			return;
 		}
 
