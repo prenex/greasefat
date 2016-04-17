@@ -154,7 +154,7 @@ function onMessage(msg) {
 				updateCurrentState(GameState.CAN_PUT);
 			}else{
 				// otherwise the enemy had drawn earlier than us
-				// And we can react to their drew
+				// And we can react to their drew by drawing our cards
 				updateCurrentState(GameState.CAN_DRAW);
 			}
 		}
@@ -171,8 +171,8 @@ function updateCurrentState(nextState) {
 // Draw for all possible positions
 // TODO: Handle cases close to the end!
 function drawCards() {
-	var drawnCards = [];
 	if(currentState == GameState.CAN_DRAW){
+		var drawnCards = [];
 		console.log("drawcards");
 		// Do the draw of the cards
 		for(i = 0; i < 4; ++i){
@@ -188,8 +188,9 @@ function drawCards() {
 			// now we should wait for them to put a card down (to keep order)
 			updateCurrentState(GameState.WAIT_FOR_PUT);
 		}else{
-			// Otherwise we are the first in order and we should go into can-put
-			updateCurrentState(GameState.CAN_PUT);
+			// Otherwise we are the first who did draw cards
+			// and we now have to wait until the other draws her cards.
+			updateCurrentState(GameState.WAIT_FOR_DRAW);
 		}
 
 		// Send message about what we did draw
@@ -231,10 +232,14 @@ function eDrawCards(cards) {
 // Puts down the given card from the hand
 // The function also updates GUI
 function putDown(index){
-	card = hand[index];
-	down.push(card);
-	hand[index] = null;
-	updateGUI();
+	if(currentState == GameState.CAN_PUT){
+		card = hand[index];
+		down.push(card);
+		hand[index] = null;
+		updateGUI();
+	}else{
+		console.log("Current state:" + currentState + " do not enable putting down cards.");
+	}
 }
 
 // Should be called when we get to know that the enemy did put down
