@@ -5,10 +5,14 @@ var CMD = (function(){
 	// This is the module itself we are building
 	var CMD = {};
 
+	// Command differentiators
 	CMD.CMD_CMD = "cmd";
 	CMD.CMD_JOIN = "join";
 	CMD.CMD_STARTED = "started";
 	CMD.CMD_DREW = "drew";
+	CMD.CMD_PUT = "put";
+	CMD.CMD_LOSE = "lose";
+	CMD.CMD_WIN = "lose";
 
 	// "Base class"
 	CMD.Cmd = function(){
@@ -36,6 +40,28 @@ var CMD = (function(){
 		this.cmd = CMD.CMD_DREW;
 		this.who = who;
 		this.cards = cards;
+	}
+
+	// The other player has put down a card
+	CMD.Put = function(who, card) {
+		// Properties
+		this.cmd = CMD.CMD_PUT;
+		this.who = who;
+		this.card = card;
+	}
+
+	// The other player has chosen to lose this battle
+	CMD.Lose = function(who) {
+		// Properties
+		this.cmd = CMD.CMD_LOSE;
+		this.who = who;
+	}
+
+	// The other player has won this battle according to the rules
+	CMD.Win = function(who) {
+		// Properties
+		this.cmd = CMD.CMD_WIN;
+		this.who = who;
 	}
 
 	// Return the created module
