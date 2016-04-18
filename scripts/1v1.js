@@ -500,8 +500,28 @@ function updateGUI() {
 	updateEHand();
 	updateDown();
 	updateButtons();
+	updateScores();
 }
 
+function updateScores() {
+	// In the end of the game show the score of the enemy
+	if(isGameEnded()){
+		$("div#eScore").css({"display":"block"});
+	}
+	$("div#myscore").text(wonPoints);
+	$("div#eScore").text(ewonPoints);
+}
+
+// CAn be used to decide if the game has ended or not
+function isGameEnded() {
+	// When there is no cards in the deck and I have put down the last
+	// and the other has put down his last that is enough as an ending
+	return (deck.length == 0) &&
+		(hand.length == 0) && 
+		(eHandCount == 0);
+}
+
+// Update the buttons in a battle
 function updateButtons() {
 	// It's mine button
 	if(currentState == GameState.CAN_WIN) {
