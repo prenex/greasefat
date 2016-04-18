@@ -318,18 +318,51 @@ function yours() {
 }
 
 // Draw for all possible positions
-// TODO: Handle cases close to the end!
 function drawCards() {
 	if(currentState == GameState.CAN_DRAW){
 		var drawnCards = [];
 		console.log("drawcards");
-		// Do the draw of the cards
+
+		// Count how many cards we want to draw
+		wantToDraw = 0;
 		for(i = 0; i < 4; ++i){
+			if(hand[i] == null){
+				++wantToDraw;
+			}
+		}
+		console.log("Want to draw: " + wantToDraw);
+		
+		// Determine how many we can draw up
+		// Both players should draw the same amount
+		// every time, but in the end it is possible
+		// that we cannot draw to get a full hand as
+		// that would result in assymetry. In those
+		// times we can draw the half of the 
+		// available cards in the deck (the other 
+		// half are the other players cards...)
+		canDraw = wantToDraw;
+		if(wantToDraw * 2 > deck.length){
+			// only draw defensively if we are the attacker!
+			if(attacking){
+				// The remaining card count
+				// is always dividable by 2
+				// (when playing 1v1)
+				canDraw = deck.length / 2;
+			}
+		}
+		console.log("Can draw: " + canDraw);
+
+		// Do the draw of the cards
+		drawCount = 0;
+		for(i = 0; i < 4 && drawCount < canDraw; ++i){
 			if(hand[i] == null){
 				draw(i, hand);
 				drawnCards.push(hand[i]);
+				++drawCount;
 			}
 		}
+		console.log("Did draw: " + drawCount);
+
 
 		// Update game state according to the previous state
 		if(previousState == GameState.WAIT_FOR_DRAW){
