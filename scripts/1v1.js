@@ -11,8 +11,8 @@ var previousState = null;
 var hand = [null, null, null, null];
 var FULL_HAND_COUNT = 4; // constant
 // Holds the hand of the enemy - useful for handling reconnections...
-var ehand = [null, null, null, null];
-var eHandCount = 4;
+//var ehand = [null, null, null, null];
+var eHandCount = 0;
 
 // The cards currently down on the table
 var down = [null, null, null, null, null, null, null, null];
@@ -24,6 +24,8 @@ var deck = [];
 var wonCards = [];
 // And the points that the won cards and actions (last win by a 7 add 10 points!) mean
 var wonPoints = 0;
+// The points of the enemy
+var ewonPoints = 0;
 
 // The widht and heigth of the sprites
 var cardWidth = 59;
@@ -203,9 +205,30 @@ function onMessage(msg) {
 	if(msg.cmd == CMD.CMD_WIN){
 		if(currentState == GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN){
 			// Handle (haha) that the other player has won a battle
+			// Remove all cards and give their points to the other player...
+			wonCount = down.length;
+			for(i = 0; i < wonCount; ++i){
+				// Pick up the card
+				wonCard = down.pop();
+
+				// Add the points that they get for the given card
+				ewonPoints+=cardPoint(wonCard);
+			}
+
 			// And wait until she draws her cards
-			down=[];
 			updateCurrentState(GameState.WAIT_FOR_DRAW);
+		}
+	}
+
+	if(msg.cmd == CMD.CMD_LOSE){
+		if(currentState == GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN){
+			// This means that the other attacker player has said
+			// he cannot win this battle so we have won it.
+			// We became the new attackers for this
+			attacking = true;
+
+			// We can take the cards afterwards this
+			updateCurrentState(GameState.CAN_WIN);
 		}
 	}
 }
@@ -226,8 +249,10 @@ function cardPoint(card){
 	// and of course the last strike with a seven ;-)
 	// (but that is handled elsewhere)
 	if(card.value == 10 || card.value == 14){
+		console.log("Card (" + card.color + ", " + card.value + ") worth 10 points.");
 		return 10;
 	}else{
+		console.log("Card (" + card.color + ", " + card.value + ") worth 0 points.");
 		return 0;
 	}
 }
@@ -237,7 +262,11 @@ function cardPoint(card){
 function mine() {
 	if(currentState == GameState.CAN_WIN){
 		// TODO: We should handle the last winning with a seven here!
-		for(i = 0; i <= down.length; ++i){
+
+		wonCount = down.length;
+		// Take cards that we have won
+		for(i = 0; i < wonCount; ++i){
+			console.log("downlen = " + down.length);
 			// Pick up the card
 			wonCard = down.pop();
 
@@ -255,6 +284,36 @@ function mine() {
 
 		// Notify the other player about our winning
 		COM.publish(new CMD.Win(params.player));
+	}
+}
+
+// This is called when we are clicking on the button after losing a battle
+// The function reset the down cards, count points for the enemy and send notification to him.
+function yours() {
+	if(currentState == GameState.CAN_PUT_OR_LOSE){
+		// TODO: We should handle the last winning with a seven here!
+
+		// Remove all cards and give their points to the other player...
+		wonCount = down.length;
+		for(i = 0; i < wonCount; ++i){
+			// Pick up the card
+			wonCard = down.pop();
+
+			// Add the points that they get for the given card
+			ewonPoints+=cardPoint(wonCard);
+		}
+
+		// After losing a battle we are not attacking anymore...
+		attacking = false;
+
+		// Actually we are only waiting for the "WIN" message
+		// but this is easier for getting back on the track
+		updateCurrentState(GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN);
+
+		// Notify the other player about their win
+		// Rem.: Their client also shows the same cards
+		//       on the table, so we do not need further notification.
+		COM.publish(new CMD.Lose(params.player));
 	}
 }
 
@@ -302,6 +361,8 @@ function draw(cardIndex, hand) {
 // - it gets removed if adding is successful!
 function eDrawCards(cards) {
 	console.log("eDrawCards");
+	// Change graphics of the cards of the other
+	eHandCount += cards.length;
 	// Filter deck to contain only those cards
 	deck = deck.filter(function(deckCard){
 		// for which every drawn card is different
@@ -311,12 +372,12 @@ function eDrawCards(cards) {
 		});
 	});
 
-	// Add the cards to the local representation
-	for(i = 0; i < 4; ++i){
-		if(ehand[i] == null){
-			ehand[i] = cards.pop();
-		}
-	}
+//	// Add the cards to the local representation
+//	for(i = 0; i < 4; ++i){
+//		if(ehand[i] == null){
+//			ehand[i] = cards.pop();
+//		}
+//	}
 }
 
 // Helper function for validating rules of the game when putting cards
@@ -385,13 +446,13 @@ function putDown(index){
 // Should be called when we get to know that the enemy did put down
 // a card. This puts it down and updates GUI
 function ePutDown(card) {
-	// Remove from eHand!!!
-	for(i = 0; i < 4; ++i){
-		// Search the element with the same value and color and make it null
-		if(ehand[i] != null && ehand[i].value == card.value && ehand[i].color == card.color){
-			ehand[i] = null;
-		}
-	}
+//	// Remove from eHand!!!
+//	for(i = 0; i < 4; ++i){
+//		// Search the element with the same value and color and make it null
+//		if(ehand[i] != null && ehand[i].value == card.value && ehand[i].color == card.color){
+//			ehand[i] = null;
+//		}
+//	}
 	// "Remove" a card from the upper enemy cards
 	--eHandCount;
 	// push the given card down
