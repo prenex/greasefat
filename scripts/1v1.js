@@ -1,6 +1,7 @@
 // JS "enum" representing the state of the game
 var GameState = Object.freeze({ "WAITING":1, "CAN_DRAW":2, "WAIT_FOR_DRAW":3,
-				"CAN_PUT":4, "CAN_PUT_OR_LOSE":5, "WAIT_FOR_PUT":6, "WAIT_FOR_PUT_OR_LOSE_OR_WIN":7, "CAN_WIN":8});
+				"CAN_PUT":4, "CAN_PUT_OR_LOSE":5, "WAIT_FOR_PUT":6, "WAIT_FOR_PUT_OR_LOSE_OR_WIN":7, "CAN_WIN":8,
+				"END":9});
 
 // The names of game states. This object acts like an associative array basically...
 var gameStateNames = {};
@@ -12,6 +13,7 @@ gameStateNames[GameState.CAN_PUT_OR_LOSE]="Put more cards down, or give up this 
 gameStateNames[GameState.WAIT_FOR_PUT]="Waiting for the other player to put down a card..."
 gameStateNames[GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN]="Waiting for the other putting a card or winning / losing the battle..."
 gameStateNames[GameState.CAN_WIN]="Take the cards you have won!"
+gameStateNames[GameState.END]="The game has ended!"
 
 // The variable that is holding the current game state
 var currentState = GameState.WAITING;
@@ -39,6 +41,10 @@ var wonPoints = 0;
 // The points of the enemy
 var ewonPoints = 0;
 
+// Used to see if we are trying a last seven strike!
+// This is better handled in a stateful way according to what we put down...
+var possibleLastSevenStrike = false;
+
 // The widht and heigth of the sprites
 var cardWidth = 59;
 var cardHeigth = 92;
@@ -53,6 +59,15 @@ var player1 = params.player < params.enemy ? params.player : params.enemy;
 var player2 = params.player > params.enemy ? params.player : params.enemy;
 var chName = "greasefat_" + player1 + "_" + player2;
 console.log("channel: " + chName);
+
+// Count active cards in our hand
+function handCount(){
+	count=0;
+	for(i = 0; i < FULL_HAND_COUNT; ++i){
+		if(hand[i]!=null) ++count;
+	}
+	return count;
+}
 
 // Called in the onLoad event of the body of the 1v1.html
 function loaded(){
@@ -80,7 +95,7 @@ function loaded(){
 
 function newGameState() {
         // Remove cards from the hand
-        for(i = 0; i < 4; ++i){
+        for(i = 0; i < FULL_HAND_COUNT; ++i){
                 hand[i] = null;
         }   
         // Reset the deck
@@ -233,8 +248,18 @@ function onMessage(msg) {
 				ewonPoints+=cardPoint(wonCard);
 			}
 
-			// And wait until she draws her cards
-			updateCurrentState(GameState.WAIT_FOR_DRAW);
+			// Handle the last seven strike of the enemy
+			if(msg.isLastSevenStrike){
+				ewonPoints+=10;
+			}
+
+			if(msg.isGameEnded){
+				// endgame?
+				updateCurrentState(GameState.END);
+			}else{
+				// otherwise wait until she draws her cards
+				updateCurrentState(GameState.WAIT_FOR_DRAW);
+			}
 		}
 	}
 
@@ -278,7 +303,18 @@ function cardPoint(card){
 // The function reset the down cards, count points and save the won cards.
 function mine() {
 	if(currentState == GameState.CAN_WIN){
-		// TODO: We should handle the last winning with a seven here!
+		// We should handle the last strike with a seven:
+		// - That means our last putdown was a seven
+		// - We are winning with it
+		// - And there is no more cards at all in our hand...
+		isLastSevenStrike = false;
+		if(possibleLastSevenStrike && isGameEnded()){
+			// it worth 10 points and we decide upon the
+			// last attacker card of ours...
+			wonPoints+=10;
+			console.log("Last seven-strike worth 10 points!");
+			isLastSevenStrike = true;
+		}
 
 		wonCount = down.length;
 		// Take cards that we have won
@@ -294,13 +330,18 @@ function mine() {
 			wonCards.push(wonCard);
 		}
 
-		// Update state so that we can draw. Because we 
-		// have won the battle as an attacker we will
-		// draw first next time too...
-		updateCurrentState(GameState.CAN_DRAW);
+		// See if we won when the game is ended
+		if(isGameEnded()){
+			updateCurrentState(GameState.END);
+		}else{
+			// Update state so that we can draw. Because we 
+			// have won the battle as an attacker we will
+			// draw first next time too...
+			updateCurrentState(GameState.CAN_DRAW);
+		}
 
 		// Notify the other player about our winning
-		COM.publish(new CMD.Win(params.player));
+		COM.publish(new CMD.Win(params.player, isGameEnded(), isLastSevenStrike));
 	}
 }
 
@@ -342,7 +383,7 @@ function drawCards() {
 
 		// Count how many cards we want to draw
 		wantToDraw = 0;
-		for(i = 0; i < 4; ++i){
+		for(i = 0; i < FULL_HAND_COUNT; ++i){
 			if(hand[i] == null){
 				++wantToDraw;
 			}
@@ -371,7 +412,7 @@ function drawCards() {
 
 		// Do the draw of the cards
 		drawCount = 0;
-		for(i = 0; i < 4 && drawCount < canDraw; ++i){
+		for(i = 0; i < FULL_HAND_COUNT && drawCount < canDraw; ++i){
 			if(hand[i] == null){
 				draw(i, hand);
 				drawnCards.push(hand[i]);
@@ -423,7 +464,7 @@ function eDrawCards(cards) {
 	});
 
 //	// Add the cards to the local representation
-//	for(i = 0; i < 4; ++i){
+//	for(i = 0; i < FULL_HAND_COUNT; ++i){
 //		if(ehand[i] == null){
 //			ehand[i] = cards.pop();
 //		}
@@ -470,6 +511,17 @@ function putDown(index){
 			return;
 		}
 
+		// If we are putting a seven, when the deck is empty
+		// that might be a last-seven-strike
+		if(card.value == 7 && deck.length == 0){
+			// Set this for later retrival in case we win!
+			// (and in case really we will have no more cards left after winning)
+			possibleLastSevenStrike=true;
+		}else{
+			// If the attacker card is not a seven anymore, this is false!
+			possibleLastSevenStrike=false;
+		}
+
 		// Put down the card from our hand
 		down.push(card);
 		hand[index] = null;
@@ -497,7 +549,7 @@ function putDown(index){
 // a card. This puts it down and updates GUI
 function ePutDown(card) {
 //	// Remove from eHand!!!
-//	for(i = 0; i < 4; ++i){
+//	for(i = 0; i < FULL_HAND_COUNT; ++i){
 //		// Search the element with the same value and color and make it null
 //		if(ehand[i] != null && ehand[i].value == card.value && ehand[i].color == card.color){
 //			ehand[i] = null;
@@ -540,8 +592,8 @@ function isGameEnded() {
 	// When there is no cards in the deck and I have put down the last
 	// and the other has put down his last that is enough as an ending
 	return (deck.length == 0) &&
-		(hand.length == 0) && 
-		(eHandCount == 0);
+		(hand.length == 0); // && 
+		//(eHandCount == 0); // eHandCount is buggy yet, but we do not need it at all here anyways...
 }
 
 // Update the buttons in a battle

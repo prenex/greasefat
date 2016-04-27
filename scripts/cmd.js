@@ -58,10 +58,12 @@ var CMD = (function(){
 	}
 
 	// The other player has won this battle according to the rules
-	CMD.Win = function(who) {
+	CMD.Win = function(who, isGameEnded, isLastSevenStrike) {
 		// Properties
 		this.cmd = CMD.CMD_WIN;
 		this.who = who;
+		this.isGameEnded = isGameEnded;
+		this.isLastSevenStrike = isLastSevenStrike;
 	}
 
 	// Return the created module
