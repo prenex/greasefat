@@ -50,6 +50,13 @@ div.pack {
 	float: left;
 }
 
+div#infobar {
+	color: yellow;
+	position: absolute;
+	top: 95%;
+	left: 10%;
+}
+
 div#myscore {
 	color: blue;
 	position: absolute;

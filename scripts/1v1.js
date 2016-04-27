@@ -1,6 +1,18 @@
 // JS "enum" representing the state of the game
 var GameState = Object.freeze({ "WAITING":1, "CAN_DRAW":2, "WAIT_FOR_DRAW":3,
-				"CAN_PUT":4, "CAN_PUT_OR_LOSE":5, "WAIT_FOR_PUT":6, "WAIT_FOR_PUT_OR_LOSE_OR_WIN":7, "CAN_WIN":8})
+				"CAN_PUT":4, "CAN_PUT_OR_LOSE":5, "WAIT_FOR_PUT":6, "WAIT_FOR_PUT_OR_LOSE_OR_WIN":7, "CAN_WIN":8});
+
+// The names of game states. This object acts like an associative array basically...
+var gameStateNames = {};
+gameStateNames[GameState.WAITING]="Waiting for the other user...";
+gameStateNames[GameState.CAN_DRAW]="Touch the deck for drawing cards!"
+gameStateNames[GameState.WAIT_FOR_DRAW]="Waiting for the other to draw up the cards..."
+gameStateNames[GameState.CAN_PUT]="Put down a card to the table!"
+gameStateNames[GameState.CAN_PUT_OR_LOSE]="Put more cards down, or give up this battle!"
+gameStateNames[GameState.WAIT_FOR_PUT]="Waiting for the other player to put down a card..."
+gameStateNames[GameState.WAIT_FOR_PUT_OR_LOSE_OR_WIN]="Waiting for the other putting a card or winning / losing the battle..."
+gameStateNames[GameState.CAN_WIN]="Take the cards you have won!"
+
 // The variable that is holding the current game state
 var currentState = GameState.WAITING;
 var attacking = false; // true when we are attacker, false when defending
@@ -51,6 +63,12 @@ function loaded(){
 		message: onMessage,
 		connect: join
 	});
+
+	// This is for removing the shown cards
+	// the cards are shown until this so that the textures are loaded properly,
+	// but we do not need it for the player to see those all-aces... so cleanup it...
+	newGameState();
+	updateGUI();
 
 	// Notification about joining the game called when connection is established
 	function join() {
@@ -239,7 +257,6 @@ function updateCurrentState(nextState) {
 	previousState = currentState;
 	currentState = nextState;
 	console.log("State has been changed from " + previousState + " to " + currentState);
-	// TODO: show the user what she can do
 	updateGUI();
 }
 
@@ -501,6 +518,12 @@ function updateGUI() {
 	updateDown();
 	updateButtons();
 	updateScores();
+	updateInfoBar();
+}
+
+function updateInfoBar() {
+	// Show the relevant infobar text for the given game state
+	$("div#infobar").text(gameStateNames[currentState]);
 }
 
 function updateScores() {
