@@ -212,8 +212,11 @@ function onMessage(msg) {
 			ePutDown(msg.card);
 			if(attacking){
 				// Check if we have won this battle here
-				// and transition to CAN_WIN when it happened.
-				if(down.length > 1 && down[down.length - 2].value != down[down.length - 1].value &&
+				// and transition to CAN_WIN when it happened:
+				// - If there are at least two cards down and we are attackers and the defender has put down hers.
+				// - And what she have put down is not the first card nor a seven
+				// - then we are winning this battle!
+				if(down.length > 1 && down[0].value != down[down.length - 1].value &&
 				   down[down.length - 1].value != 7) {
 					updateCurrentState(GameState.CAN_WIN);
 					return;
@@ -307,6 +310,9 @@ function mine() {
 		// - That means our last putdown was a seven
 		// - We are winning with it
 		// - And there is no more cards at all in our hand...
+		console.log("Checking for last seven strike:");
+		console.log(" - possibleLastSevenStrike=" + possibleLastSevenStrike);
+		console.log(" - isGameEnded()="+isGameEnded());
 		isLastSevenStrike = false;
 		if(possibleLastSevenStrike && isGameEnded()){
 			// it worth 10 points and we decide upon the
@@ -315,6 +321,7 @@ function mine() {
 			console.log("Last seven-strike worth 10 points!");
 			isLastSevenStrike = true;
 		}
+		console.log(" => ", isLastSevenStrike);
 
 		wonCount = down.length;
 		// Take cards that we have won
@@ -515,9 +522,9 @@ function putDown(index){
 			return;
 		}
 
-		// If we are putting a seven, when the deck is empty
-		// that might be a last-seven-strike
-		if(card.value == 7 && deck.length == 0){
+		// If we are putting a seven
+		// that might be a last-seven-strike (in endgame)
+		if(card.value == 7){
 			// Set this for later retrival in case we win!
 			// (and in case really we will have no more cards left after winning)
 			possibleLastSevenStrike=true;
@@ -596,7 +603,7 @@ function isGameEnded() {
 	// When there is no cards in the deck and I have put down the last
 	// and the other has put down his last that is enough as an ending
 	return (deck.length == 0) &&
-		(hand.length == 0); // && 
+		(handCount() == 0); // && 
 		//(eHandCount == 0); // eHandCount is buggy yet, but we do not need it at all here anyways...
 }
 
