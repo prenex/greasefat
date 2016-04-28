@@ -281,11 +281,20 @@ function onMessage(msg) {
 
 // Changes the game-state to the given one
 // Method is extracted early so that later logic can came in (like state-checks, previous states etc.)
+// This method also handles some short-circuit events, for example automatic card drawing in CAN_DRAW
+// when there are no cards in the deck at all!
 function updateCurrentState(nextState) {
 	previousState = currentState;
 	currentState = nextState;
 	console.log("State has been changed from " + previousState + " to " + currentState);
 	updateGUI();
+
+	// Short-circuit drawing cards when there are no cards in the deck
+	// This automatism is handy!
+	if(nextState == GameState.CAN_DRAW && deck.length == 0){
+		console.log("Automatic drawCards happens because the deck is empty!")
+		drawCards();
+	}
 }
 
 // Gets how many points a card means
@@ -337,6 +346,15 @@ function mine() {
 			wonCards.push(wonCard);
 		}
 
+		// Notify the other player about our winning
+		// FIXME: In most cases, the publish happens last but here it isn't (!)
+		// This is because CAN_DRAW state is fast-forwarded by drawing autimatically
+		// when there are no cards in the deck out of convenience in the updateCurrentState.
+		// However... if the publish happens later then the update, the order of operations
+		// becomes ill. As all the target states coming from reacting to this message are
+		// waiting states (END or WAIT_*) it is save to do the publish first!!!
+		COM.publish(new CMD.Win(params.player, isGameEnded(), isLastSevenStrike));
+
 		// See if we won when the game is ended
 		if(isGameEnded()){
 			updateCurrentState(GameState.END);
@@ -346,9 +364,6 @@ function mine() {
 			// draw first next time too...
 			updateCurrentState(GameState.CAN_DRAW);
 		}
-
-		// Notify the other player about our winning
-		COM.publish(new CMD.Win(params.player, isGameEnded(), isLastSevenStrike));
 	}
 }
 
