@@ -1,0 +1,29 @@
+#lobbycontainer {
+	background-color: black;
+	background-image: url(../images/background.jpg);
+	background-size:100% 100%;
+	height: 100%;
+	width: 100%;
+	position: relative;
+}
+
+body {
+	color: white;
+}
+
+form#starter {
+	position: absolute;
+	left:0;
+	top:0;
+}
+
+.right {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	border: 3px solid #73AD21;
+	padding: 10px;
+	background : #000; 
+	opacity: 0.6; 
+	filter: alpha(opacity=60);
+}
