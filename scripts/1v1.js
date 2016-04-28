@@ -401,7 +401,10 @@ function drawCards() {
 		canDraw = wantToDraw;
 		if(wantToDraw * 2 > deck.length){
 			// only draw defensively if we are the attacker!
-			if(attacking){
+			// Or there are no cards at all (even if we are defending or attacking)
+			// The latter is necessary because there can be more than one turns 
+			// with an empty deck
+			if(attacking || deck.length == 0){
 				// The remaining card count
 				// is always dividable by 2
 				// (when playing 1v1)
@@ -452,6 +455,7 @@ function draw(cardIndex, hand) {
 // - it gets removed if adding is successful!
 function eDrawCards(cards) {
 	console.log("eDrawCards");
+	console.log(" - cards.length = " + cards.length);
 	// Change graphics of the cards of the other
 	eHandCount += cards.length;
 	// Filter deck to contain only those cards
