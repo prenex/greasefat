@@ -15,21 +15,24 @@ The architecture follows sheer simplicity.
 How to play
 -----------
 
-1.) Open this link (or your installation link)
+1. Open this link (or your installation link)
       http://ballmerpeak.web.elte.hu/greasefat/
-2.) The short rules are written down on this page
-3.) Enter your nickname and the nickname of your friend who will be your enemy
-4.) Start playing and wait for your arranged partner to arrive in the room.
+2. The short rules are written down on this page
+3. Enter your nickname and the nickname of your friend who will be your enemy
+4. Start playing and wait for your arranged partner to arrive in the room.
 
 You can arrange the games through any media you wish: facebook, skype, telephone or using your mouth whatsoever!
+
 If you want a rematch or a new game, just repeat from step 1 - it is that easy!
+
+Have fun!
 
 How to run your own server
 --------------------------
 
-1.) Clone the repository at a place where you can host the files
-2.) Exchange the authentication values for pubnub so that it uses your free account (if everyone uses mine, no messages will be sent over time on both so don't do it for your own servers sake)
-3.) The server is hosted
+1. Clone the repository at a place where you can host the files
+2. Exchange the authentication values for pubnub so that it uses your free account (if everyone uses mine, no messages will be sent over time on both so don't do it for your own servers sake)
+3. The server is hosted
 
 Added extra:
 * It is very easy to see how the game starts after the lobby. It is just about going to / redirecting to the proper URL.
